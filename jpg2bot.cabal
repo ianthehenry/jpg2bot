@@ -23,7 +23,7 @@ executable jpg2bot
                        lens == 4.*,
                        text >= 1.1.1.3,
                        warp == 3.*,
-                       tightrope == 0.1.*,
+                       tightrope == 0.2.*,
                        base >=4.7 && <4.8
   -- hs-source-dirs:
   default-language:    Haskell2010
