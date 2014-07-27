@@ -12,26 +12,17 @@ import qualified Network.Wreq as Wreq
 import           Prelude hiding (words, unwords)
 import           Data.Attoparsec.Text
 import           Control.Applicative
-import           Data.Monoid (mconcat)
-
-emojis :: [TR.Icon]
-emojis = fmap TR.Icon ["rat", "mouse2", "ox", "water_buffalo", "cow2", "tiger2", "leopard", "rabbit2", "cat2", "dragon", "crocodile", "whale2", "snail", "snake", "racehorse", "ram", "goat", "sheep", "monkey", "rooster", "chicken", "dog2", "pig2", "boar", "elephant", "octopus", "shell", "bug", "ant", "honeybee", "beetle", "fish", "tropical_fish", "blowfish", "turtle", "hatching_chick", "baby_chick", "hatched_chick", "bird", "penguin", "koala", "poodle", "dromedary_camel", "camel", "flipper", "mouse", "cow", "tiger", "rabbit", "cat", "dragon_face", "whale", "horse", "monkey_face", "dog", "pig", "frog", "hamster", "wolf", "bear", "panda_face"]
+import           Data.Monoid (mconcat, mappend)
 
 randomEmoji :: IO TR.Icon
-randomEmoji = do
-  i <- getStdRandom $ randomR (0, length emojis - 1)
-  return (emojis !! i) -- yolo
-
-srcParser :: Parser Text
-srcParser = manyTill anyChar (asciiCI "src=\"") *> takeTill (== '"')
+randomEmoji = (emojis !!) <$> getStdRandom (randomR (0, length emojis - 1))
+  where emojis = fmap TR.Icon ["rat", "mouse2", "ox", "water_buffalo", "cow2", "tiger2", "leopard", "rabbit2", "cat2", "dragon", "crocodile", "whale2", "snail", "snake", "racehorse", "ram", "goat", "sheep", "monkey", "rooster", "chicken", "dog2", "pig2", "boar", "elephant", "octopus", "shell", "bug", "ant", "honeybee", "beetle", "fish", "tropical_fish", "blowfish", "turtle", "hatching_chick", "baby_chick", "hatched_chick", "bird", "penguin", "koala", "poodle", "dromedary_camel", "camel", "flipper", "mouse", "cow", "tiger", "rabbit", "cat", "dragon_face", "whale", "horse", "monkey_face", "dog", "pig", "frog", "hamster", "wolf", "bear", "panda_face"]
 
 jpgUrl :: [Text] -> IO (Either String Text)
-jpgUrl inputWords = do
-  res <- Wreq.get (unpack url)
-  return $ case parseLazy srcParser (res ^. Wreq.responseBody) of
-    Left e -> Left $ mconcat ["Error parsing <img> tag: ", e]
-    Right imageUrl -> Right imageUrl
-  where parseLazy p = parseOnly p . decodeUtf8 . toStrict
+jpgUrl inputWords = (prettifyError . parseLazy . (^. Wreq.responseBody)) <$> Wreq.get (unpack url)
+  where prettifyError = either (Left . mappend "Error parsing <img> tag: ") Right
+        parseLazy = parseOnly p . decodeUtf8 . toStrict
+        p = manyTill anyChar (asciiCI "src=\"") *> takeTill (== '"')
         hostname = intercalate "." inputWords
         url = mconcat ["http://", hostname, ".jpg.to"]
 
@@ -41,13 +32,10 @@ handler command = do
   case words (command ^. TR.text) of
     [] -> return "You need to ask for some words!"
     wordsRequested -> do
-      parseResult <- TR.liftIO $ jpgUrl wordsRequested
-      case parseResult of
-        Left errorString -> return (pack errorString)
-        Right url -> do
-          let message = TR.message icon "jpg2bot" (mconcat [unwords wordsRequested, ": ", url])
-          TR.say message (command ^. TR.source)
-          return ""
+      parseResult <- TR.liftIO (jpgUrl wordsRequested)
+      either (return . pack) (\t -> report t >> return "") parseResult
+      where report url = TR.say (message url) (command ^. TR.source)
+            message url = TR.message icon "jpg2bot" (mconcat [unwords wordsRequested, ": ", url])
 
 main :: IO ()
 main = do
