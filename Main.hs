@@ -29,7 +29,7 @@ handler command = TR.liftIO randomEmoji >>= \icon ->
     wordsRequested -> TR.liftIO (jpgUrl wordsRequested) >>= either (return . pack) (report $>> "")
       where (f $>> result) arg = f arg >> return result
             report url = TR.say (message url) (command ^. TR.source)
-            message url = TR.message icon "jpg2bot" (mconcat [unwords wordsRequested, ": ", url])
+            message url = TR.message icon "jpg2bot" (mconcat ["<", url, "|", unwords wordsRequested, ">"])
 
 main :: IO ()
 main = do
