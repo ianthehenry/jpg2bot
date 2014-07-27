@@ -1,0 +1,3 @@
+token = "asdf"
+url = "https://company.slack.com/services/hooks/incoming-webhook"
+port = 4000

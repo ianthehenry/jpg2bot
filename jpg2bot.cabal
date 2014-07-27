@@ -16,7 +16,9 @@ executable jpg2bot
   main-is:             Main.hs
   -- other-modules:
   -- other-extensions:
-  build-depends:       bytestring >= 0.10.4.0,
+  build-depends:       configurator,
+                       base-prelude,
+                       bytestring >= 0.10.4.0,
                        attoparsec >= 0.12.1.0,
                        wreq >= 0.1.0.1,
                        random==1.*,

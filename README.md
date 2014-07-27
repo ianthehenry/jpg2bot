@@ -12,12 +12,10 @@ The functionality is the same but for one crucial difference: `jpg2bot` has a ra
 
 # How do I use it
 
-It's really easy!
+It's really easy! You just need to fill out a `conf` file.
 
-    $ git clone https://github.com/ianthehenry/jpg2bot.git
-    $ cd jpg2bot
-    $ printf "your-token" > token
-    $ ... edit the file that hardcodes trello.slack, whoops ...
+    $ cp conf.example conf
+    $ vim conf # do things here
     $ cabal sandbox init
     $ cabal install -j --only-dependencies
     $ cabal run
