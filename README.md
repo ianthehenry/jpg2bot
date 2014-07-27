@@ -12,11 +12,12 @@ The functionality is the same but for one crucial difference: `jpg2bot` has a ra
 
 # How do I use it
 
-Right now you have to clone [Tightrope](https://github.com/ianthehenry/tightrope) separately because it isn't on Hackage yet. These steps will be much simpler soon.
+It's really easy!
 
-    $ git clone https://github.com/ianthehenry/tightrope.git
     $ git clone https://github.com/ianthehenry/jpg2bot.git
     $ cd jpg2bot
+    $ printf "your-token" > token
+    $ ... edit the file that hardcodes trello.slack, whoops ...
     $ cabal sandbox init
-    $ cabal sandbox add-source ../tightrope
+    $ cabal install -j --only-dependencies
     $ cabal run
