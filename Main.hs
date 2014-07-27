@@ -26,12 +26,12 @@ randomEmoji = do
 srcParser :: Parser Text
 srcParser = manyTill anyChar (asciiCI "src=\"") *> takeTill (== '"')
 
-jpgUrl :: [Text] -> IO Text
+jpgUrl :: [Text] -> IO (Either String Text)
 jpgUrl inputWords = do
   res <- Wreq.get (unpack url)
   return $ case parseLazy srcParser (res ^. Wreq.responseBody) of
-    Left e -> mconcat ["Error parsing <img> tag: ", pack e]
-    Right imageUrl -> imageUrl
+    Left e -> Left $ mconcat ["Error parsing <img> tag: ", e]
+    Right imageUrl -> Right imageUrl
   where parseLazy p = parseOnly p . decodeUtf8 . toStrict
         hostname = intercalate "." inputWords
         url = mconcat ["http://", hostname, ".jpg.to"]
@@ -42,12 +42,15 @@ handler command = do
   case words (command ^. text) of
     [] -> return "You need to ask for some words!"
     wordsRequested -> do
-      url <- liftIO $ jpgUrl wordsRequested
-      say $ message icon
-                    "jpg2bot"
-                    (mconcat [unwords wordsRequested, ": ", url])
-                    (command ^. source)
-      return ""
+      parseResult <- liftIO $ jpgUrl wordsRequested
+      case parseResult of
+        Left errorString -> return (pack errorString)
+        Right url -> do
+          say $ message icon
+            "jpg2bot"
+            (mconcat [unwords wordsRequested, ": ", url])
+            (command ^. source)
+          return ""
 
 main :: IO ()
 main = do
