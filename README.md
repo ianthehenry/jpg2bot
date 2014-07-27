@@ -7,7 +7,8 @@ The functionality is the same but for one crucial difference: `jpg2bot` has a ra
 # Features
 
 - randomized response emoji
-- it doesn't work yet
+- echoes input back
+- works
 
 # How do I use it
 
