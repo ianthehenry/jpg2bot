@@ -4,7 +4,7 @@
 
 The functionality is the same but for one crucial difference: `jpg2bot` has a random animal as the emoji, whereas `jpgtobot` is always just a 🎁.
 
-Weighing in at a *healthy* 40 lines of code, `jpg2bot` is the smart choice for photographic experts on the lookout for shiba inus.
+Weighing in at a *healthy* 39 [lines of code](https://github.com/ianthehenry/jpg2bot/blob/master/Main.hs), `jpg2bot` is the smart choice for photographic experts on the lookout for shiba inus.
 
 ![wow. is not corg](screenshot.png)
 
