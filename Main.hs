@@ -26,9 +26,8 @@ handler :: TR.Command -> TR.Slack Text
 handler command = TR.liftIO randomEmoji >>= \icon ->
   case (words . filter isAscii) (command ^. TR.text) of
     [] -> return "You need to ask for some (ASCII) words!"
-    wordsRequested -> TR.liftIO (jpgUrl wordsRequested) >>= either (return . pack) (report $>> "")
-      where (f $>> result) arg = f arg >> return result
-            report url = TR.say (message url) (command ^. TR.source)
+    wordsRequested -> TR.liftIO (jpgUrl wordsRequested) >>= either (return . pack) (("" <$) . report)
+      where report url = TR.say (message url) (command ^. TR.source)
             message url = TR.message icon "jpg2bot" (mconcat ["<", url, "|", unwords wordsRequested, ">"])
 
 main :: IO ()
