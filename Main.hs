@@ -16,17 +16,17 @@ randomEmoji :: IO TR.Icon
 randomEmoji = (emojis !!) <$> getStdRandom (randomR (0, length emojis - 1))
   where emojis = fmap TR.Icon ["rat", "mouse2", "ox", "water_buffalo", "cow2", "tiger2", "leopard", "rabbit2", "cat2", "dragon", "crocodile", "whale2", "snail", "snake", "racehorse", "ram", "goat", "sheep", "monkey", "rooster", "chicken", "dog2", "pig2", "boar", "elephant", "octopus", "shell", "bug", "ant", "honeybee", "beetle", "fish", "tropical_fish", "blowfish", "turtle", "hatching_chick", "baby_chick", "hatched_chick", "bird", "penguin", "koala", "poodle", "dromedary_camel", "camel", "flipper", "mouse", "cow", "tiger", "rabbit", "cat", "dragon_face", "whale", "horse", "monkey_face", "dog", "pig", "frog", "hamster", "wolf", "bear", "panda_face"]
 
-jpgUrl :: [Text] -> IO (Either String Text)
-jpgUrl inputWords = (parse . response) <$> Wreq.get url
+jpgUrl :: Text -> [Text] -> IO (Either String Text)
+jpgUrl t inputWords = (parse . response) <$> Wreq.get url
   where response = decodeUtf8 . LBS.toStrict . (^. Wreq.responseBody)
         parse = parseOnly $ manyTill anyChar (asciiCI "src=\"") *> takeTill (== '"')
-        url = unpack $ mconcat ["http://", intercalate "." inputWords, ".jpg.to"]
+        url = unpack $ mconcat ["http://", intercalate "." inputWords, ".jpg.to/", t]
 
 handler :: TR.Command -> TR.Slack Text
 handler command = TR.liftIO randomEmoji >>= \icon ->
   case (words . filter isAscii) (command ^. TR.text) of
     [] -> return "You need to ask for some (ASCII) words!"
-    wordsRequested -> TR.liftIO (jpgUrl wordsRequested) >>= either (return . pack) (("" <$) . report)
+    wordsRequested -> TR.liftIO (jpgUrl (command ^. TR.name) wordsRequested) >>= either (return . pack) (("" <$) . report)
       where report url = TR.say (message url) (command ^. TR.source)
             message url = TR.message icon "jpg2bot" (mconcat ["<", url, "|", unwords wordsRequested, ">"])
 
